@@ -1,0 +1,639 @@
+
+LED_Blink_Test.elf:     file format elf32-littlearm
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .isr_vector   0000018c  08000000  08000000  00001000  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  1 .text         000002b4  0800018c  0800018c  0000118c  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  2 .rodata       00000000  08000440  08000448  00001448  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  3 .ARM.extab    00000000  08000440  08000440  00001448  2**0
+                  CONTENTS, READONLY
+  4 .ARM          00000000  08000440  08000440  00001448  2**0
+                  CONTENTS, READONLY
+  5 .preinit_array 00000000  08000440  08000448  00001448  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  6 .init_array   00000004  08000440  08000440  00001440  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  7 .fini_array   00000004  08000444  08000444  00001444  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  8 .data         00000000  20000000  20000000  00001448  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  9 .sram2        00000000  10000000  10000000  00001448  2**0
+                  CONTENTS
+ 10 .bss          0000001c  20000000  20000000  00002000  2**2
+                  ALLOC
+ 11 ._user_heap_stack 00000604  2000001c  2000001c  00002000  2**0
+                  ALLOC
+ 12 .ARM.attributes 00000030  00000000  00000000  00001448  2**0
+                  CONTENTS, READONLY
+ 13 .debug_info   0000018c  00000000  00000000  00001478  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 14 .debug_abbrev 000000d2  00000000  00000000  00001604  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 15 .debug_aranges 00000050  00000000  00000000  000016d8  2**3
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 16 .debug_rnglists 00000033  00000000  00000000  00001728  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 17 .debug_macro  00000fe8  00000000  00000000  0000175b  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 18 .debug_line   00000576  00000000  00000000  00002743  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 19 .debug_str    00003e7c  00000000  00000000  00002cb9  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 20 .comment      00000043  00000000  00000000  00006b35  2**0
+                  CONTENTS, READONLY
+ 21 .debug_frame  00000080  00000000  00000000  00006b78  2**2
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 22 .debug_line_str 00000063  00000000  00000000  00006bf8  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+
+Disassembly of section .text:
+
+0800018c <__do_global_dtors_aux>:
+ 800018c:	b510      	push	{r4, lr}
+ 800018e:	4c05      	ldr	r4, [pc, #20]	@ (80001a4 <__do_global_dtors_aux+0x18>)
+ 8000190:	7823      	ldrb	r3, [r4, #0]
+ 8000192:	b933      	cbnz	r3, 80001a2 <__do_global_dtors_aux+0x16>
+ 8000194:	4b04      	ldr	r3, [pc, #16]	@ (80001a8 <__do_global_dtors_aux+0x1c>)
+ 8000196:	b113      	cbz	r3, 800019e <__do_global_dtors_aux+0x12>
+ 8000198:	4804      	ldr	r0, [pc, #16]	@ (80001ac <__do_global_dtors_aux+0x20>)
+ 800019a:	f3af 8000 	nop.w
+ 800019e:	2301      	movs	r3, #1
+ 80001a0:	7023      	strb	r3, [r4, #0]
+ 80001a2:	bd10      	pop	{r4, pc}
+ 80001a4:	20000000 	.word	0x20000000
+ 80001a8:	00000000 	.word	0x00000000
+ 80001ac:	08000428 	.word	0x08000428
+
+080001b0 <frame_dummy>:
+ 80001b0:	b508      	push	{r3, lr}
+ 80001b2:	4b03      	ldr	r3, [pc, #12]	@ (80001c0 <frame_dummy+0x10>)
+ 80001b4:	b11b      	cbz	r3, 80001be <frame_dummy+0xe>
+ 80001b6:	4903      	ldr	r1, [pc, #12]	@ (80001c4 <frame_dummy+0x14>)
+ 80001b8:	4803      	ldr	r0, [pc, #12]	@ (80001c8 <frame_dummy+0x18>)
+ 80001ba:	f3af 8000 	nop.w
+ 80001be:	bd08      	pop	{r3, pc}
+ 80001c0:	00000000 	.word	0x00000000
+ 80001c4:	20000004 	.word	0x20000004
+ 80001c8:	08000428 	.word	0x08000428
+
+080001cc <LED_Set>:
+/* =========================================================
+ * 4. LED 控制函式
+ * ========================================================= */
+
+void LED_Set(uint32_t state)
+{
+ 80001cc:	b480      	push	{r7}
+ 80001ce:	b083      	sub	sp, #12
+ 80001d0:	af00      	add	r7, sp, #0
+ 80001d2:	6078      	str	r0, [r7, #4]
+    if (state)
+ 80001d4:	687b      	ldr	r3, [r7, #4]
+ 80001d6:	2b00      	cmp	r3, #0
+ 80001d8:	d003      	beq.n	80001e2 <LED_Set+0x16>
+    {
+        /* PA5 輸出 HIGH：LED 亮 */
+        GPIOA_BSRR = (1U << 5);
+ 80001da:	4b07      	ldr	r3, [pc, #28]	@ (80001f8 <LED_Set+0x2c>)
+ 80001dc:	2220      	movs	r2, #32
+ 80001de:	601a      	str	r2, [r3, #0]
+    else
+    {
+        /* PA5 輸出 LOW：LED 滅 */
+        GPIOA_BSRR = (1U << 21);
+    }
+}
+ 80001e0:	e003      	b.n	80001ea <LED_Set+0x1e>
+        GPIOA_BSRR = (1U << 21);
+ 80001e2:	4b05      	ldr	r3, [pc, #20]	@ (80001f8 <LED_Set+0x2c>)
+ 80001e4:	f44f 1200 	mov.w	r2, #2097152	@ 0x200000
+ 80001e8:	601a      	str	r2, [r3, #0]
+}
+ 80001ea:	bf00      	nop
+ 80001ec:	370c      	adds	r7, #12
+ 80001ee:	46bd      	mov	sp, r7
+ 80001f0:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 80001f4:	4770      	bx	lr
+ 80001f6:	bf00      	nop
+ 80001f8:	48000018 	.word	0x48000018
+
+080001fc <main>:
+/* =========================================================
+ * 5. 主程式
+ * ========================================================= */
+
+int main(void)
+{
+ 80001fc:	b580      	push	{r7, lr}
+ 80001fe:	b08a      	sub	sp, #40	@ 0x28
+ 8000200:	af00      	add	r7, sp, #0
+    /* -----------------------------------------------------
+     * A. 啟用 GPIOA 時脈
+     * ----------------------------------------------------- */
+
+    RCC_AHB2ENR |= (1U << 0);
+ 8000202:	4b5a      	ldr	r3, [pc, #360]	@ (800036c <main+0x170>)
+ 8000204:	681b      	ldr	r3, [r3, #0]
+ 8000206:	4a59      	ldr	r2, [pc, #356]	@ (800036c <main+0x170>)
+ 8000208:	f043 0301 	orr.w	r3, r3, #1
+ 800020c:	6013      	str	r3, [r2, #0]
+    /* -----------------------------------------------------
+     * B. PA5 設定為輸出
+     * ----------------------------------------------------- */
+
+    /* 預設輸出 LOW */
+    GPIOA_BSRR = (1U << 21);
+ 800020e:	4b58      	ldr	r3, [pc, #352]	@ (8000370 <main+0x174>)
+ 8000210:	f44f 1200 	mov.w	r2, #2097152	@ 0x200000
+ 8000214:	601a      	str	r2, [r3, #0]
+
+    /* PA5 設定為一般輸出模式 */
+    GPIOA_MODER &= ~(3U << 10);
+ 8000216:	f04f 4390 	mov.w	r3, #1207959552	@ 0x48000000
+ 800021a:	681b      	ldr	r3, [r3, #0]
+ 800021c:	f04f 4290 	mov.w	r2, #1207959552	@ 0x48000000
+ 8000220:	f423 6340 	bic.w	r3, r3, #3072	@ 0xc00
+ 8000224:	6013      	str	r3, [r2, #0]
+    GPIOA_MODER |=  (1U << 10);
+ 8000226:	f04f 4390 	mov.w	r3, #1207959552	@ 0x48000000
+ 800022a:	681b      	ldr	r3, [r3, #0]
+ 800022c:	f04f 4290 	mov.w	r2, #1207959552	@ 0x48000000
+ 8000230:	f443 6380 	orr.w	r3, r3, #1024	@ 0x400
+ 8000234:	6013      	str	r3, [r2, #0]
+
+    /* PA5 設定為推挽輸出 */
+    GPIOA_OTYPER &= ~(1U << 5);
+ 8000236:	4b4f      	ldr	r3, [pc, #316]	@ (8000374 <main+0x178>)
+ 8000238:	681b      	ldr	r3, [r3, #0]
+ 800023a:	4a4e      	ldr	r2, [pc, #312]	@ (8000374 <main+0x178>)
+ 800023c:	f023 0320 	bic.w	r3, r3, #32
+ 8000240:	6013      	str	r3, [r2, #0]
+
+    /* -----------------------------------------------------
+     * C. PA10 設定為輸入
+     * ----------------------------------------------------- */
+
+    GPIOA_MODER &= ~(3U << 20);
+ 8000242:	f04f 4390 	mov.w	r3, #1207959552	@ 0x48000000
+ 8000246:	681b      	ldr	r3, [r3, #0]
+ 8000248:	f04f 4290 	mov.w	r2, #1207959552	@ 0x48000000
+ 800024c:	f423 1340 	bic.w	r3, r3, #3145728	@ 0x300000
+ 8000250:	6013      	str	r3, [r2, #0]
+
+    /* 啟用 PA10 內部上拉電阻 */
+    GPIOA_PUPDR &= ~(3U << 20);
+ 8000252:	4b49      	ldr	r3, [pc, #292]	@ (8000378 <main+0x17c>)
+ 8000254:	681b      	ldr	r3, [r3, #0]
+ 8000256:	4a48      	ldr	r2, [pc, #288]	@ (8000378 <main+0x17c>)
+ 8000258:	f423 1340 	bic.w	r3, r3, #3145728	@ 0x300000
+ 800025c:	6013      	str	r3, [r2, #0]
+    GPIOA_PUPDR |=  (1U << 20);
+ 800025e:	4b46      	ldr	r3, [pc, #280]	@ (8000378 <main+0x17c>)
+ 8000260:	681b      	ldr	r3, [r3, #0]
+ 8000262:	4a45      	ldr	r2, [pc, #276]	@ (8000378 <main+0x17c>)
+ 8000264:	f443 1380 	orr.w	r3, r3, #1048576	@ 0x100000
+ 8000268:	6013      	str	r3, [r2, #0]
+
+    /* -----------------------------------------------------
+     * D. 初始 LED 關閉
+     * ----------------------------------------------------- */
+
+    LED_Set(0);
+ 800026a:	2000      	movs	r0, #0
+ 800026c:	f7ff ffae 	bl	80001cc <LED_Set>
+    /* -----------------------------------------------------
+     * E. 設定 SysTick 計時器
+     * ----------------------------------------------------- */
+
+    /* 先停止 SysTick */
+    SYST_CSR = 0;
+ 8000270:	4b42      	ldr	r3, [pc, #264]	@ (800037c <main+0x180>)
+ 8000272:	2200      	movs	r2, #0
+ 8000274:	601a      	str	r2, [r3, #0]
+     * Reload = 3999
+     *
+     * 每 1ms 完成一次計數週期
+     */
+
+    SYST_RVR = (SYSCLK_HZ / 1000U) - 1U;
+ 8000276:	4b42      	ldr	r3, [pc, #264]	@ (8000380 <main+0x184>)
+ 8000278:	f640 729f 	movw	r2, #3999	@ 0xf9f
+ 800027c:	601a      	str	r2, [r3, #0]
+
+    /* 清除目前計數值 */
+    SYST_CVR = 0;
+ 800027e:	4b41      	ldr	r3, [pc, #260]	@ (8000384 <main+0x188>)
+ 8000280:	2200      	movs	r2, #0
+ 8000282:	601a      	str	r2, [r3, #0]
+    /*
+     * Bit 2 = 1：使用核心時脈
+     * Bit 0 = 1：啟動 SysTick
+     */
+
+    SYST_CSR = (1U << 2) | (1U << 0);
+ 8000284:	4b3d      	ldr	r3, [pc, #244]	@ (800037c <main+0x180>)
+ 8000286:	2205      	movs	r2, #5
+ 8000288:	601a      	str	r2, [r3, #0]
+    /* -----------------------------------------------------
+     * F. 狀態變數
+     * ----------------------------------------------------- */
+
+    /* 毫秒計數 */
+    uint32_t ms = 0;
+ 800028a:	2300      	movs	r3, #0
+ 800028c:	627b      	str	r3, [r7, #36]	@ 0x24
+
+    /* 按下時間 */
+    uint32_t press_start = 0;
+ 800028e:	2300      	movs	r3, #0
+ 8000290:	623b      	str	r3, [r7, #32]
+
+    /* 上次閃爍時間 */
+    uint32_t blink_start = 0;
+ 8000292:	2300      	movs	r3, #0
+ 8000294:	61fb      	str	r3, [r7, #28]
+
+    /* 防彈跳時間 */
+    uint32_t debounce_start = 0;
+ 8000296:	2300      	movs	r3, #0
+ 8000298:	61bb      	str	r3, [r7, #24]
+
+    /* 上一次讀取到的按鈕狀態 */
+    uint32_t previous_raw = 0;
+ 800029a:	2300      	movs	r3, #0
+ 800029c:	617b      	str	r3, [r7, #20]
+
+    /* 經過防彈跳確認的按鈕狀態 */
+    uint32_t stable_pressed = 0;
+ 800029e:	2300      	movs	r3, #0
+ 80002a0:	613b      	str	r3, [r7, #16]
+
+    /* LED 原本的開關狀態 */
+    uint32_t led_state = 0;
+ 80002a2:	2300      	movs	r3, #0
+ 80002a4:	60fb      	str	r3, [r7, #12]
+
+    /* 閃爍時使用的 LED 狀態 */
+    uint32_t blink_state = 0;
+ 80002a6:	2300      	movs	r3, #0
+ 80002a8:	60bb      	str	r3, [r7, #8]
+
+    /* 是否進入長按模式 */
+    uint32_t long_mode = 0;
+ 80002aa:	2300      	movs	r3, #0
+ 80002ac:	607b      	str	r3, [r7, #4]
+    {
+        /* -----------------------------------------------
+         * 1. 更新毫秒計數
+         * ----------------------------------------------- */
+
+        if (SYST_CSR & (1U << 16))
+ 80002ae:	4b33      	ldr	r3, [pc, #204]	@ (800037c <main+0x180>)
+ 80002b0:	681b      	ldr	r3, [r3, #0]
+ 80002b2:	f403 3380 	and.w	r3, r3, #65536	@ 0x10000
+ 80002b6:	2b00      	cmp	r3, #0
+ 80002b8:	d002      	beq.n	80002c0 <main+0xc4>
+        {
+            ms++;
+ 80002ba:	6a7b      	ldr	r3, [r7, #36]	@ 0x24
+ 80002bc:	3301      	adds	r3, #1
+ 80002be:	627b      	str	r3, [r7, #36]	@ 0x24
+         * PA10 = 1：沒有按下
+         * PA10 = 0：按鈕按下
+         */
+
+        uint32_t raw_pressed =
+            (GPIOA_IDR & (1U << 10)) == 0U;
+ 80002c0:	4b31      	ldr	r3, [pc, #196]	@ (8000388 <main+0x18c>)
+ 80002c2:	681b      	ldr	r3, [r3, #0]
+ 80002c4:	f403 6380 	and.w	r3, r3, #1024	@ 0x400
+ 80002c8:	2b00      	cmp	r3, #0
+ 80002ca:	bf0c      	ite	eq
+ 80002cc:	2301      	moveq	r3, #1
+ 80002ce:	2300      	movne	r3, #0
+ 80002d0:	b2db      	uxtb	r3, r3
+        uint32_t raw_pressed =
+ 80002d2:	603b      	str	r3, [r7, #0]
+
+        /* -----------------------------------------------
+         * 3. 偵測按鈕訊號變化
+         * ----------------------------------------------- */
+
+        if (raw_pressed != previous_raw)
+ 80002d4:	683a      	ldr	r2, [r7, #0]
+ 80002d6:	697b      	ldr	r3, [r7, #20]
+ 80002d8:	429a      	cmp	r2, r3
+ 80002da:	d003      	beq.n	80002e4 <main+0xe8>
+        {
+            debounce_start = ms;
+ 80002dc:	6a7b      	ldr	r3, [r7, #36]	@ 0x24
+ 80002de:	61bb      	str	r3, [r7, #24]
+            previous_raw = raw_pressed;
+ 80002e0:	683b      	ldr	r3, [r7, #0]
+ 80002e2:	617b      	str	r3, [r7, #20]
+
+        /* -----------------------------------------------
+         * 4. 按鈕防彈跳處理
+         * ----------------------------------------------- */
+
+        if ((ms - debounce_start) >= DEBOUNCE_MS)
+ 80002e4:	6a7a      	ldr	r2, [r7, #36]	@ 0x24
+ 80002e6:	69bb      	ldr	r3, [r7, #24]
+ 80002e8:	1ad3      	subs	r3, r2, r3
+ 80002ea:	2b1d      	cmp	r3, #29
+ 80002ec:	d917      	bls.n	800031e <main+0x122>
+        {
+            if (raw_pressed != stable_pressed)
+ 80002ee:	683a      	ldr	r2, [r7, #0]
+ 80002f0:	693b      	ldr	r3, [r7, #16]
+ 80002f2:	429a      	cmp	r2, r3
+ 80002f4:	d013      	beq.n	800031e <main+0x122>
+            {
+                stable_pressed = raw_pressed;
+ 80002f6:	683b      	ldr	r3, [r7, #0]
+ 80002f8:	613b      	str	r3, [r7, #16]
+
+                /* 按鈕剛按下 */
+                if (stable_pressed)
+ 80002fa:	693b      	ldr	r3, [r7, #16]
+ 80002fc:	2b00      	cmp	r3, #0
+ 80002fe:	d004      	beq.n	800030a <main+0x10e>
+                {
+                    press_start = ms;
+ 8000300:	6a7b      	ldr	r3, [r7, #36]	@ 0x24
+ 8000302:	623b      	str	r3, [r7, #32]
+                    long_mode = 0;
+ 8000304:	2300      	movs	r3, #0
+ 8000306:	607b      	str	r3, [r7, #4]
+ 8000308:	e009      	b.n	800031e <main+0x122>
+                }
+
+                /* 按鈕剛放開 */
+                else
+                {
+                    if (long_mode == 0)
+ 800030a:	687b      	ldr	r3, [r7, #4]
+ 800030c:	2b00      	cmp	r3, #0
+ 800030e:	d103      	bne.n	8000318 <main+0x11c>
+                        /*
+                         * 短按：
+                         * 切換 LED 開關狀態
+                         */
+
+                        led_state ^= 1U;
+ 8000310:	68fb      	ldr	r3, [r7, #12]
+ 8000312:	f083 0301 	eor.w	r3, r3, #1
+ 8000316:	60fb      	str	r3, [r7, #12]
+                    }
+
+                    /*
+                     * 恢復 LED 的一般狀態
+                     */
+                    LED_Set(led_state);
+ 8000318:	68f8      	ldr	r0, [r7, #12]
+ 800031a:	f7ff ff57 	bl	80001cc <LED_Set>
+
+        /* -----------------------------------------------
+         * 5. 按鈕持續按住
+         * ----------------------------------------------- */
+
+        if (stable_pressed)
+ 800031e:	693b      	ldr	r3, [r7, #16]
+ 8000320:	2b00      	cmp	r3, #0
+ 8000322:	d0c4      	beq.n	80002ae <main+0xb2>
+        {
+            /* 判斷是否達到長按門檻 */
+
+            if (long_mode == 0 &&
+ 8000324:	687b      	ldr	r3, [r7, #4]
+ 8000326:	2b00      	cmp	r3, #0
+ 8000328:	d10e      	bne.n	8000348 <main+0x14c>
+                (ms - press_start) >= LONG_PRESS_MS)
+ 800032a:	6a7a      	ldr	r2, [r7, #36]	@ 0x24
+ 800032c:	6a3b      	ldr	r3, [r7, #32]
+ 800032e:	1ad3      	subs	r3, r2, r3
+            if (long_mode == 0 &&
+ 8000330:	f5b3 7f48 	cmp.w	r3, #800	@ 0x320
+ 8000334:	d308      	bcc.n	8000348 <main+0x14c>
+            {
+                /* 進入長按模式 */
+
+                long_mode = 1;
+ 8000336:	2301      	movs	r3, #1
+ 8000338:	607b      	str	r3, [r7, #4]
+
+                /* 開始閃爍 */
+                blink_state = 1;
+ 800033a:	2301      	movs	r3, #1
+ 800033c:	60bb      	str	r3, [r7, #8]
+
+                /* 記錄開始閃爍時間 */
+                blink_start = ms;
+ 800033e:	6a7b      	ldr	r3, [r7, #36]	@ 0x24
+ 8000340:	61fb      	str	r3, [r7, #28]
+
+                LED_Set(blink_state);
+ 8000342:	68b8      	ldr	r0, [r7, #8]
+ 8000344:	f7ff ff42 	bl	80001cc <LED_Set>
+
+            /* -------------------------------------------
+             * 6. 長按閃爍模式
+             * ------------------------------------------- */
+
+            if (long_mode)
+ 8000348:	687b      	ldr	r3, [r7, #4]
+ 800034a:	2b00      	cmp	r3, #0
+ 800034c:	d0af      	beq.n	80002ae <main+0xb2>
+            {
+                if ((ms - blink_start) >= BLINK_MS)
+ 800034e:	6a7a      	ldr	r2, [r7, #36]	@ 0x24
+ 8000350:	69fb      	ldr	r3, [r7, #28]
+ 8000352:	1ad3      	subs	r3, r2, r3
+ 8000354:	2bf9      	cmp	r3, #249	@ 0xf9
+ 8000356:	d9aa      	bls.n	80002ae <main+0xb2>
+                {
+                    /* 更新閃爍時間 */
+                    blink_start = ms;
+ 8000358:	6a7b      	ldr	r3, [r7, #36]	@ 0x24
+ 800035a:	61fb      	str	r3, [r7, #28]
+
+                    /* 切換亮滅 */
+                    blink_state ^= 1U;
+ 800035c:	68bb      	ldr	r3, [r7, #8]
+ 800035e:	f083 0301 	eor.w	r3, r3, #1
+ 8000362:	60bb      	str	r3, [r7, #8]
+
+                    /* 更新 LED */
+                    LED_Set(blink_state);
+ 8000364:	68b8      	ldr	r0, [r7, #8]
+ 8000366:	f7ff ff31 	bl	80001cc <LED_Set>
+    {
+ 800036a:	e7a0      	b.n	80002ae <main+0xb2>
+ 800036c:	4002104c 	.word	0x4002104c
+ 8000370:	48000018 	.word	0x48000018
+ 8000374:	48000004 	.word	0x48000004
+ 8000378:	4800000c 	.word	0x4800000c
+ 800037c:	e000e010 	.word	0xe000e010
+ 8000380:	e000e014 	.word	0xe000e014
+ 8000384:	e000e018 	.word	0xe000e018
+ 8000388:	48000010 	.word	0x48000010
+
+0800038c <Reset_Handler>:
+
+  .section .text.Reset_Handler
+  .weak Reset_Handler
+  .type Reset_Handler, %function
+Reset_Handler:
+  ldr   r0, =_estack
+ 800038c:	480d      	ldr	r0, [pc, #52]	@ (80003c4 <LoopForever+0x2>)
+  mov   sp, r0          /* set stack pointer */
+ 800038e:	4685      	mov	sp, r0
+/* Call the clock system initialization function.*/
+  bl  SystemInit
+ 8000390:	f3af 8000 	nop.w
+
+/* Copy the data segment initializers from flash to SRAM */
+  ldr r0, =_sdata
+ 8000394:	480c      	ldr	r0, [pc, #48]	@ (80003c8 <LoopForever+0x6>)
+  ldr r1, =_edata
+ 8000396:	490d      	ldr	r1, [pc, #52]	@ (80003cc <LoopForever+0xa>)
+  ldr r2, =_sidata
+ 8000398:	4a0d      	ldr	r2, [pc, #52]	@ (80003d0 <LoopForever+0xe>)
+  movs r3, #0
+ 800039a:	2300      	movs	r3, #0
+  b LoopCopyDataInit
+ 800039c:	e002      	b.n	80003a4 <LoopCopyDataInit>
+
+0800039e <CopyDataInit>:
+
+CopyDataInit:
+  ldr r4, [r2, r3]
+ 800039e:	58d4      	ldr	r4, [r2, r3]
+  str r4, [r0, r3]
+ 80003a0:	50c4      	str	r4, [r0, r3]
+  adds r3, r3, #4
+ 80003a2:	3304      	adds	r3, #4
+
+080003a4 <LoopCopyDataInit>:
+
+LoopCopyDataInit:
+  adds r4, r0, r3
+ 80003a4:	18c4      	adds	r4, r0, r3
+  cmp r4, r1
+ 80003a6:	428c      	cmp	r4, r1
+  bcc CopyDataInit
+ 80003a8:	d3f9      	bcc.n	800039e <CopyDataInit>
+
+/* Zero fill the bss segment. */
+  ldr r2, =_sbss
+ 80003aa:	4a0a      	ldr	r2, [pc, #40]	@ (80003d4 <LoopForever+0x12>)
+  ldr r4, =_ebss
+ 80003ac:	4c0a      	ldr	r4, [pc, #40]	@ (80003d8 <LoopForever+0x16>)
+  movs r3, #0
+ 80003ae:	2300      	movs	r3, #0
+  b LoopFillZerobss
+ 80003b0:	e001      	b.n	80003b6 <LoopFillZerobss>
+
+080003b2 <FillZerobss>:
+
+FillZerobss:
+  str  r3, [r2]
+ 80003b2:	6013      	str	r3, [r2, #0]
+  adds r2, r2, #4
+ 80003b4:	3204      	adds	r2, #4
+
+080003b6 <LoopFillZerobss>:
+
+LoopFillZerobss:
+  cmp r2, r4
+ 80003b6:	42a2      	cmp	r2, r4
+  bcc FillZerobss
+ 80003b8:	d3fb      	bcc.n	80003b2 <FillZerobss>
+
+
+/* Call static constructors */
+  bl __libc_init_array
+ 80003ba:	f000 f811 	bl	80003e0 <__libc_init_array>
+/* Call the application's entry point.*/
+
+  bl main
+ 80003be:	f7ff ff1d 	bl	80001fc <main>
+
+080003c2 <LoopForever>:
+
+LoopForever:
+  b LoopForever
+ 80003c2:	e7fe      	b.n	80003c2 <LoopForever>
+  ldr   r0, =_estack
+ 80003c4:	20018000 	.word	0x20018000
+  ldr r0, =_sdata
+ 80003c8:	20000000 	.word	0x20000000
+  ldr r1, =_edata
+ 80003cc:	20000000 	.word	0x20000000
+  ldr r2, =_sidata
+ 80003d0:	08000448 	.word	0x08000448
+  ldr r2, =_sbss
+ 80003d4:	20000000 	.word	0x20000000
+  ldr r4, =_ebss
+ 80003d8:	2000001c 	.word	0x2000001c
+
+080003dc <ADC1_2_IRQHandler>:
+ * @retval : None
+*/
+  .section .text.Default_Handler,"ax",%progbits
+Default_Handler:
+Infinite_Loop:
+  b Infinite_Loop
+ 80003dc:	e7fe      	b.n	80003dc <ADC1_2_IRQHandler>
+	...
+
+080003e0 <__libc_init_array>:
+ 80003e0:	b570      	push	{r4, r5, r6, lr}
+ 80003e2:	4b0d      	ldr	r3, [pc, #52]	@ (8000418 <__libc_init_array+0x38>)
+ 80003e4:	4d0d      	ldr	r5, [pc, #52]	@ (800041c <__libc_init_array+0x3c>)
+ 80003e6:	1b5b      	subs	r3, r3, r5
+ 80003e8:	109c      	asrs	r4, r3, #2
+ 80003ea:	2600      	movs	r6, #0
+ 80003ec:	42a6      	cmp	r6, r4
+ 80003ee:	d109      	bne.n	8000404 <__libc_init_array+0x24>
+ 80003f0:	f000 f81a 	bl	8000428 <_init>
+ 80003f4:	4d0a      	ldr	r5, [pc, #40]	@ (8000420 <__libc_init_array+0x40>)
+ 80003f6:	4b0b      	ldr	r3, [pc, #44]	@ (8000424 <__libc_init_array+0x44>)
+ 80003f8:	1b5b      	subs	r3, r3, r5
+ 80003fa:	109c      	asrs	r4, r3, #2
+ 80003fc:	2600      	movs	r6, #0
+ 80003fe:	42a6      	cmp	r6, r4
+ 8000400:	d105      	bne.n	800040e <__libc_init_array+0x2e>
+ 8000402:	bd70      	pop	{r4, r5, r6, pc}
+ 8000404:	f855 3b04 	ldr.w	r3, [r5], #4
+ 8000408:	4798      	blx	r3
+ 800040a:	3601      	adds	r6, #1
+ 800040c:	e7ee      	b.n	80003ec <__libc_init_array+0xc>
+ 800040e:	f855 3b04 	ldr.w	r3, [r5], #4
+ 8000412:	4798      	blx	r3
+ 8000414:	3601      	adds	r6, #1
+ 8000416:	e7f2      	b.n	80003fe <__libc_init_array+0x1e>
+ 8000418:	08000440 	.word	0x08000440
+ 800041c:	08000440 	.word	0x08000440
+ 8000420:	08000440 	.word	0x08000440
+ 8000424:	08000444 	.word	0x08000444
+
+08000428 <_init>:
+ 8000428:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
+ 800042a:	bf00      	nop
+ 800042c:	bcf8      	pop	{r3, r4, r5, r6, r7}
+ 800042e:	bc08      	pop	{r3}
+ 8000430:	469e      	mov	lr, r3
+ 8000432:	4770      	bx	lr
+
+08000434 <_fini>:
+ 8000434:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
+ 8000436:	bf00      	nop
+ 8000438:	bcf8      	pop	{r3, r4, r5, r6, r7}
+ 800043a:	bc08      	pop	{r3}
+ 800043c:	469e      	mov	lr, r3
+ 800043e:	4770      	bx	lr

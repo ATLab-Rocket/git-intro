@@ -92,19 +92,35 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 
-  uint8_t tx[4] = {0x9F, 0xFF, 0xFF, 0xFF};
-  uint8_t rx[4] = {0};
 
+  /* USER CODE BEGIN 2 */
+
+  uint8_t command = 0x9F;
+  uint8_t id[3] = {0};
+
+  HAL_StatusTypeDef tx_status;
+  HAL_StatusTypeDef rx_status;
+
+  // CS 拉低，選擇 Flash
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
 
-  HAL_StatusTypeDef status =
-      HAL_SPI_TransmitReceive(&hspi1, tx, rx, 4, 1000);
+  // 傳送 JEDEC ID 指令
+  tx_status = HAL_SPI_Transmit(
+      &hspi1, &command, 1, 1000
+  );
 
+  // 接收 3 bytes 的 ID
+  rx_status = HAL_SPI_Receive(
+      &hspi1, id, 3, 1000
+  );
+
+  // CS 拉高，結束通訊
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
 
   volatile uint8_t test_done = 1;
 
   /* USER CODE END 2 */
+
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */

@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -38,6 +38,84 @@
 #define TFT_RST_Pin GPIO_PIN_0
 #define TFT_DC_GPIO_Port GPIOB
 #define TFT_DC_Pin GPIO_PIN_1
+
+
+// TFT display setting
+#define TFT_BLACK  0x0000
+#define TFT_WHITE  0xFFFF
+#define TFT_CYAN   0x07FF
+#define TFT_GREEN  0x07E0
+#define TFT_YELLOW 0xFFE0
+#define TFT_GRAY   0x8410
+// 5x7 字型，索引依照下面 chars 的順序
+static const char chars[] =
+    " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:/.-";
+
+static const uint8_t font[][5] = {
+    {0,0,0,0,0},          // space
+    {0x7E,0x11,0x11,0x11,0x7E}, // A
+    {0x7F,0x49,0x49,0x49,0x36}, // B
+    {0x3E,0x41,0x41,0x41,0x22}, // C
+    {0x7F,0x41,0x41,0x22,0x1C}, // D
+    {0x7F,0x49,0x49,0x49,0x41}, // E
+    {0x7F,0x09,0x09,0x09,0x01}, // F
+    {0x3E,0x41,0x49,0x49,0x7A}, // G
+    {0x7F,0x08,0x08,0x08,0x7F}, // H
+    {0x41,0x41,0x7F,0x41,0x41}, // I
+    {0x20,0x40,0x41,0x3F,0x01}, // J
+    {0x7F,0x08,0x14,0x22,0x41}, // K
+    {0x7F,0x40,0x40,0x40,0x40}, // L
+    {0x7F,0x02,0x0C,0x02,0x7F}, // M
+    {0x7F,0x04,0x08,0x10,0x7F}, // N
+    {0x3E,0x41,0x41,0x41,0x3E}, // O
+    {0x7F,0x09,0x09,0x09,0x06}, // P
+    {0x3E,0x41,0x51,0x21,0x5E}, // Q
+    {0x7F,0x09,0x19,0x29,0x46}, // R
+    {0x46,0x49,0x49,0x49,0x31}, // S
+    {0x01,0x01,0x7F,0x01,0x01}, // T
+    {0x3F,0x40,0x40,0x40,0x3F}, // U
+    {0x1F,0x20,0x40,0x20,0x1F}, // V
+    {0x7F,0x20,0x18,0x20,0x7F}, // W
+    {0x63,0x14,0x08,0x14,0x63}, // X
+    {0x03,0x04,0x78,0x04,0x03}, // Y
+    {0x61,0x51,0x49,0x45,0x43}, // Z
+
+    {0x3E,0x51,0x49,0x45,0x3E}, // 0
+    {0x00,0x42,0x7F,0x40,0x00}, // 1
+    {0x42,0x61,0x51,0x49,0x46}, // 2
+    {0x21,0x41,0x45,0x4B,0x31}, // 3
+    {0x18,0x14,0x12,0x7F,0x10}, // 4
+    {0x27,0x45,0x45,0x45,0x39}, // 5
+    {0x3C,0x4A,0x49,0x49,0x30}, // 6
+    {0x01,0x71,0x09,0x05,0x03}, // 7
+    {0x36,0x49,0x49,0x49,0x36}, // 8
+    {0x06,0x49,0x49,0x29,0x1E}, // 9
+
+    {0x00,0x36,0x36,0x00,0x00}, // :
+    {0x20,0x10,0x08,0x04,0x02}, // /
+    {0x00,0x60,0x60,0x00,0x00}, // .
+    {0x08,0x08,0x08,0x08,0x08}  // -
+};
+
+
+/*
+ * has_ 欄位表示資料是否有效：
+ * 0：尚未取得資料，顯示 N/A，
+ * 1：已取得資料，顯示實際數值
+ */
+typedef struct
+{
+    uint8_t id[3];
+    uint8_t status;
+    uint32_t address;
+    uint8_t data[4];
+
+    uint8_t has_id;
+    uint8_t has_status;
+    uint8_t has_address;
+    uint8_t has_data;
+
+} FlashInfo;
 
 /* USER CODE END PTD */
 
@@ -99,15 +177,15 @@ void TFT_Init(void) {
 	TFT_Command(0x11);
 	HAL_Delay(120);
 
-	// 16-bit color
+	// 16-bit color(color representing format)
 	TFT_Command(0x3A);
 	TFT_Data(0x05);
 
 	//Memory access control
 	TFT_Command(0x36);
-	TFT_Data(0x00);
+	TFT_Data(0xC0); // rotate 180
 
-	// Normal display mode
+	// Normal display mode 螢幕進入正常顯示模式，而不是 Partial Display Mode（局部顯示模式）
 	TFT_Command(0x13);
 	HAL_Delay(10);
 
@@ -116,37 +194,14 @@ void TFT_Init(void) {
 	HAL_Delay(100);
 }
 
-void TFT_FillRed(void)
-{
-    // Column address: 0 ~ 127
-    TFT_Command(0x2A);
-    TFT_Data(0x00);
-    TFT_Data(0x00);
-    TFT_Data(0x00);
-    TFT_Data(0x7F);
-
-    // Row address: 0 ~ 159
-    TFT_Command(0x2B);
-    TFT_Data(0x00);
-    TFT_Data(0x00);
-    TFT_Data(0x00);
-    TFT_Data(0x9F);
-
-    // Memory write
-    TFT_Command(0x2C);
-
-    HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(TFT_DC_GPIO_Port, TFT_DC_Pin, GPIO_PIN_SET);
-
-    uint8_t red[2] = {0xF8, 0x00};
-
-    for (int i = 0; i < 128 * 160; i++)
-    {
-        HAL_SPI_Transmit(&hspi1, red, 2, 1000);
-    }
-
-    HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_SET);
-}
+void TFT_DrawPixel(uint16_t x, uint16_t y, uint16_t color);
+void TFT_DrawChar(uint16_t x, uint16_t y, char c,
+                  uint16_t color, uint16_t bg);
+void TFT_DrawString(uint16_t x, uint16_t y, const char *str,
+                    uint16_t color, uint16_t bg);
+void TFT_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+void TFT_FillColor(uint16_t color);
+void TFT_ShowFlashInfo(const FlashInfo *info);
 
 
 /* USER CODE END 0 */
@@ -183,29 +238,28 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   TFT_Init();
-  TFT_FillRed();
 
-  // CS 拉低，選擇 Flash
-  SEL_FLASH();
+  FlashInfo flash = {0};
+
+
+
   //----
   // 讀取ID
   //----
-  // 傳送 JEDEC ID 指令
+  SEL_FLASH();
   uint8_t command = 0x9F;
-  uint8_t id[3] = {0};
+  HAL_StatusTypeDef rx_st = HAL_ERROR;
   HAL_StatusTypeDef tx_st = HAL_SPI_Transmit(&hspi1, &command, 1, 1000);
-  //printf("SPI TX status %d\r\n", tx_st);
-  HAL_StatusTypeDef rx_st = HAL_SPI_Receive(&hspi1, id, 3, 1000);
-  //printf("SPI RX status %d\r\n", rx_st);
-  //printf("Flash ID: %02X %02X %02X \r\n", id[0], id[1], id[2]);
+  if (tx_st == HAL_OK)
+	  rx_st = HAL_SPI_Receive(&hspi1, flash.id, 3, 1000);
+
+  if (tx_st == HAL_OK && rx_st == HAL_OK) flash.has_id = 1;
+  UNSEL_FLASH();
+  TFT_ShowFlashInfo(&flash);
 
   //----
   //讀取register
   //----
-
-
-  // CS 拉高，結束通訊
-  UNSEL_FLASH();
 
   /* USER CODE END 2 */
 
@@ -352,7 +406,193 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void TFT_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+{
+    TFT_Command(0x2A);
+    TFT_Data(x0 >> 8);
+    TFT_Data(x0 & 0xFF);
+    TFT_Data(x1 >> 8);
+    TFT_Data(x1 & 0xFF);
 
+    TFT_Command(0x2B);
+    TFT_Data(y0 >> 8);
+    TFT_Data(y0 & 0xFF);
+    TFT_Data(y1 >> 8);
+    TFT_Data(y1 & 0xFF);
+}
+
+void TFT_FillColor(uint16_t color)
+{
+    TFT_SetAddressWindow(0, 0, 127, 159);
+    TFT_Command(0x2C);
+
+    uint8_t pixel[2] = {
+        (uint8_t)(color >> 8),
+        (uint8_t)(color & 0xFF)
+    };
+
+    SEL_TFT();
+    HAL_GPIO_WritePin(TFT_DC_GPIO_Port, TFT_DC_Pin, GPIO_PIN_SET);
+
+    for (int i = 0; i < 128 * 160; i++)
+    {
+        HAL_SPI_Transmit(&hspi1, pixel, 2, 1000);
+    }
+
+    UNSEL_TFT();
+}
+
+void TFT_DrawPixel(uint16_t x, uint16_t y, uint16_t color)
+{
+    if (x >= 128 || y >= 160) return;
+
+    TFT_SetAddressWindow(x, y, x, y);
+    TFT_Command(0x2C);
+
+    uint8_t pixel[2] = {
+        (uint8_t)(color >> 8),
+        (uint8_t)(color & 0xFF)
+    };
+
+    SEL_TFT();
+    HAL_GPIO_WritePin(TFT_DC_GPIO_Port, TFT_DC_Pin, GPIO_PIN_SET);
+    HAL_SPI_Transmit(&hspi1, pixel, 2, 1000);
+    UNSEL_TFT();
+}
+
+void TFT_DrawChar(uint16_t x, uint16_t y, char c,
+                  uint16_t color, uint16_t bg)
+{
+    const uint8_t *glyph = font[0];
+
+    for (unsigned int i = 0; i < sizeof(chars) - 1; i++)
+    {
+        if (chars[i] == c)
+        {
+            glyph = font[i];
+            break;
+        }
+    }
+
+    for (int col = 0; col < 6; col++)
+    {
+        for (int row = 0; row < 8; row++)
+        {
+            uint16_t pixelColor = bg;
+
+            if (col < 5 && row < 7)
+            {
+                if (glyph[col] & (1 << row))
+                    pixelColor = color;
+            }
+
+            TFT_DrawPixel(x + col, y + row, pixelColor);
+        }
+    }
+}
+
+void TFT_DrawString(uint16_t x, uint16_t y, const char *str,
+                    uint16_t color, uint16_t bg)
+{
+    while (*str && x <= 122)
+    {
+        TFT_DrawChar(x, y, *str, color, bg);
+        x += 6;
+        str++;
+    }
+}
+
+void TFT_ShowFlashInfo(const FlashInfo *info)
+{
+    if (info == NULL)
+        return;
+
+    char buf[32];
+
+    // Clear screen
+    TFT_FillColor(TFT_BLACK);
+
+    // Title
+    TFT_DrawString(4, 4, "SPI FLASH MONITOR",
+                   TFT_CYAN, TFT_BLACK);
+
+    TFT_DrawString(4, 18, "W25Q128JV / SPI1",
+                   TFT_GRAY, TFT_BLACK);
+
+    // JEDEC ID
+    if (info->has_id)
+    {
+        snprintf(buf, sizeof(buf), "ID:%02X %02X %02X",
+                 info->id[0],
+                 info->id[1],
+                 info->id[2]);
+    }
+    else
+    {
+        snprintf(buf, sizeof(buf), "ID:N/A");
+    }
+
+    TFT_DrawString(4, 40, buf, TFT_WHITE, TFT_BLACK);
+
+    // Status Register
+    if (info->has_status)
+    {
+        snprintf(buf, sizeof(buf), "STATUS:%02X",
+                 info->status);
+    }
+    else
+    {
+        snprintf(buf, sizeof(buf), "STATUS:N/A");
+    }
+
+    TFT_DrawString(4, 56, buf, TFT_GREEN, TFT_BLACK);
+
+    // BUSY / WEL
+    if (info->has_status)
+    {
+        snprintf(buf, sizeof(buf), "BUSY:%d WEL:%d",
+                 info->status & 0x01,
+                 (info->status >> 1) & 0x01);
+    }
+    else
+    {
+        snprintf(buf, sizeof(buf), "BUSY:N/A WEL:N/A");
+    }
+
+    TFT_DrawString(4, 72, buf, TFT_GREEN, TFT_BLACK);
+
+    // Address
+    if (info->has_address)
+    {
+        snprintf(buf, sizeof(buf), "ADDR:%06lX",
+                 (unsigned long)(info->address & 0xFFFFFF));
+    }
+    else
+    {
+        snprintf(buf, sizeof(buf), "ADDR:N/A");
+    }
+
+    TFT_DrawString(4, 96, buf, TFT_YELLOW, TFT_BLACK);
+
+    // Data
+    TFT_DrawString(4, 112, "DATA:",
+                   TFT_GRAY, TFT_BLACK);
+
+    if (info->has_data)
+    {
+        snprintf(buf, sizeof(buf), "%02X %02X %02X %02X",
+                 info->data[0],
+                 info->data[1],
+                 info->data[2],
+                 info->data[3]);
+    }
+    else
+    {
+        snprintf(buf, sizeof(buf), "N/A");
+    }
+
+    TFT_DrawString(4, 124, buf, TFT_WHITE, TFT_BLACK);
+}
 /* USER CODE END 4 */
 
 /**

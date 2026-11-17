@@ -205,21 +205,34 @@ void TFT_FillColor(uint16_t color);
 void TFT_ShowFlashInfo(const FlashInfo *info);
 
 /* read status register*/
-void updateFlashStatus(FlashInfo* flash){
-	  SEL_FLASH();
-	  uint8_t command = 0x05;
-	  HAL_StatusTypeDef commute_status = HAL_SPI_Transmit(&hspi1, &command, 1, 1000);
-	  if (commute_status == HAL_OK) {
-		  commute_status = HAL_SPI_Receive(&hspi1, &flash->status, 1, 1000);
-	  }
-	  UNSEL_FLASH();
+HAL_StatusTypeDef readFlashStatus(FlashInfo* flash){
+	if (flash == NULL)
+	    return HAL_ERROR;
 
-	  if (commute_status == HAL_OK) {
-		  flash->has_status = 1;
-	  }
-  }
+	flash->has_status = 0;
 
-void readMemory(FlashInfo* flash, uint32_t address){
+	SEL_FLASH();
+	uint8_t command = 0x05;
+	HAL_StatusTypeDef commute_status = HAL_SPI_Transmit(&hspi1, &command, 1, 1000);
+	if (commute_status == HAL_OK) {
+		commute_status = HAL_SPI_Receive(&hspi1, &flash->status, 1, 1000);
+	}
+	UNSEL_FLASH();
+
+	if (commute_status == HAL_OK) {
+		flash->has_status = 1;
+	}
+	return commute_status;
+}
+
+
+HAL_StatusTypeDef readMemory(FlashInfo* flash, uint32_t address){
+	if (flash == NULL || address > 0xFFFFFC)
+	    return HAL_ERROR;
+	flash->has_data = 0;
+	flash->has_address = 0;
+
+
 	uint8_t command[4] = {
 			0x03,
 			(uint8_t)(address >> 16),
@@ -227,9 +240,9 @@ void readMemory(FlashInfo* flash, uint32_t address){
 			(uint8_t)address
 	};
 	SEL_FLASH();
-	HAL_StatusTypeDef status = HAL_SPI_Transmit(&hspi1, command, 1, 1000);
+	HAL_StatusTypeDef status = HAL_SPI_Transmit(&hspi1, command, 4, 1000);
 	if (status == HAL_OK) {
-		status = HAL_SPI_Receive(&hspi1, flash->data, 1, 1000);
+		status = HAL_SPI_Receive(&hspi1, flash->data, 4, 1000);
 	}
 	if (status == HAL_OK) {
 		flash->has_data = 1;
@@ -237,10 +250,74 @@ void readMemory(FlashInfo* flash, uint32_t address){
 		flash->has_address = 1;
 	}
 	UNSEL_FLASH();
+	return status;
 }
 
-void writeMemory(FlashInfo* flash){
 
+HAL_StatusTypeDef waitFlashReady(FlashInfo *flash, uint32_t timeout)
+{
+    uint32_t start = HAL_GetTick();
+
+    while (1)
+    {
+        HAL_StatusTypeDef result = readFlashStatus(flash);
+
+        if (result != HAL_OK)
+            return result;
+
+        if (!(flash->status & 0x01))
+            return HAL_OK;
+
+        if (HAL_GetTick() - start >= timeout)
+            return HAL_TIMEOUT;
+    }
+}
+
+HAL_StatusTypeDef writeMemory(FlashInfo* flash, uint32_t address, uint8_t data){
+	if (flash == NULL || address > 0xFFFFFC)
+	    return HAL_ERROR;
+
+
+	// until not busy
+	HAL_StatusTypeDef readStat;
+	readStat = waitFlashReady(flash, 1000);
+	if (readStat != HAL_OK) return readStat;
+
+	// write enable
+	SEL_FLASH();
+	uint8_t command = 0x06;
+	readStat = HAL_SPI_Transmit(&hspi1, &command, 1, 1000);
+	UNSEL_FLASH();
+	if (readStat != HAL_OK) return readStat;
+
+	// until enable
+	uint32_t start = HAL_GetTick();
+	while(1){
+		readStat = readFlashStatus(flash);
+		if (readStat != HAL_OK)
+			return readStat;
+
+		if (flash->status & 0x02) break;
+
+		if (HAL_GetTick() - start >= 1000)
+			return HAL_TIMEOUT;
+	}
+
+	// write
+	SEL_FLASH();
+	uint8_t writeCmd[5] = {
+			0x02,
+			(uint8_t)(address >> 16),
+			(uint8_t)(address >> 8),
+			(uint8_t)address,
+			data
+	};
+	readStat = HAL_SPI_Transmit(&hspi1, writeCmd, 5, 1000);
+	UNSEL_FLASH();
+	if (readStat != HAL_OK) return readStat;
+
+	// until not busy
+	return waitFlashReady(flash, 1000);
 }
 
 /* USER CODE END 0 */
@@ -289,10 +366,15 @@ int main(void)
   UNSEL_FLASH();
   if (commute_status == HAL_OK) flash.has_id = 1;
 
-  updateFlashStatus(&flash);
+  readFlashStatus(&flash);
 
 
   // read memory
+  readMemory(&flash, 0x123456);
+  TFT_ShowFlashInfo(&flash);
+
+  // write and read
+  writeMemory(&flash, 0x123456, 0xAB);
   readMemory(&flash, 0x123456);
   TFT_ShowFlashInfo(&flash);
 

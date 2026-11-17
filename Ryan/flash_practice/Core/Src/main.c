@@ -164,6 +164,7 @@ void TFT_Data(uint8_t data) {
 	HAL_SPI_Transmit(&hspi1, &data, 1, 1000);
 	UNSEL_TFT();
 }
+
 void TFT_Init(void) {
 	HAL_GPIO_WritePin(TFT_RST_GPIO_Port, TFT_RST_Pin, GPIO_PIN_RESET);
 	HAL_Delay(20);
@@ -244,22 +245,35 @@ int main(void)
 
 
   //----
-  // 讀取ID
+  // read ID
   //----
   SEL_FLASH();
   uint8_t command = 0x9F;
-  HAL_StatusTypeDef rx_st = HAL_ERROR;
-  HAL_StatusTypeDef tx_st = HAL_SPI_Transmit(&hspi1, &command, 1, 1000);
-  if (tx_st == HAL_OK)
-	  rx_st = HAL_SPI_Receive(&hspi1, flash.id, 3, 1000);
-
-  if (tx_st == HAL_OK && rx_st == HAL_OK) flash.has_id = 1;
+  HAL_StatusTypeDef commute_status = HAL_SPI_Transmit(&hspi1, &command, 1, 1000);
+  if (commute_status == HAL_OK)
+	  commute_status = HAL_SPI_Receive(&hspi1, flash.id, 3, 1000);
   UNSEL_FLASH();
+
+  if (commute_status == HAL_OK) flash.has_id = 1;
   TFT_ShowFlashInfo(&flash);
 
   //----
-  //讀取register
+  //read status register
   //----
+  SEL_FLASH();
+  command = 0x05;
+  uint8_t flash_status;
+  commute_status = HAL_SPI_Transmit(&hspi1, &command, 1, 1000);
+  if (commute_status == HAL_OK) {
+	  commute_status = HAL_SPI_Receive(&hspi1, &flash_status, 1, 1000);
+  }
+  UNSEL_FLASH();
+
+  if (commute_status == HAL_OK) {
+	  flash.status = flash_status;
+	  flash.has_status = 1;
+  }
+  TFT_ShowFlashInfo(&flash);
 
   /* USER CODE END 2 */
 

@@ -8,9 +8,11 @@
 | ----------------------- | --------------------- | ---------- |
 | Microcontroller         | STM32F407VET6         | SPI Master |
 | SPI NOR Flash           | Winbond W25Q128JV     | 外部資料儲存     |
-| Debugger / Programmer   | ST-Link（型號待確認）        | 程式燒錄與除錯    |
-| Jumper Wires            | 杜邦線                   | SPI 訊號連接   |
+| Debugger / Programmer   | ST-Link      | 程式燒錄與除錯    |
 | Development Environment | STM32CubeIDE / CubeMX | 程式開發與周邊設定  |
+LCD螢幕 | ST7735 SPI TFT LCD | 
+
+![image](Ryan\flash_practice\TFTandSTM32.jpg)
 
 ### Flash Specifications
 

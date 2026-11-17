@@ -12,7 +12,7 @@
 | Development Environment | STM32CubeIDE / CubeMX | 程式開發與周邊設定  |
 LCD螢幕 | ST7735 SPI TFT LCD | 
 
-![image](Ryan\flash_practice\TFTandSTM32.jpg)
+![image](./TFTandSTM32.jpg)
 
 ### Flash Specifications
 

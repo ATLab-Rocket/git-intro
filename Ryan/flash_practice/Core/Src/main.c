@@ -26,6 +26,18 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+#define SPI1_CLK_GPIO_Port GPIOA
+#define SPI1_CLK_Pin GPIO_PIN_5
+
+#define FLASH_CS_GPIO_Port GPIOA
+#define FLASH_CS_Pin GPIO_PIN_4
+
+#define TFT_CS_GPIO_Port GPIOE
+#define TFT_CS_Pin GPIO_PIN_7
+#define TFT_RST_GPIO_Port GPIOB
+#define TFT_RST_Pin GPIO_PIN_0
+#define TFT_DC_GPIO_Port GPIOB
+#define TFT_DC_Pin GPIO_PIN_1
 
 /* USER CODE END PTD */
 
@@ -36,7 +48,12 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+#define SEL_TFT()   HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_RESET);
+#define UNSEL_TFT()   HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_SET);
 
+
+#define SEL_FLASH()   HAL_GPIO_WritePin(FLASH_CS_GPIO_Port, FLASH_CS_Pin, GPIO_PIN_RESET);
+#define UNSEL_FLASH()   HAL_GPIO_WritePin(FLASH_CS_GPIO_Port, FLASH_CS_Pin, GPIO_PIN_SET);
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -56,6 +73,81 @@ static void MX_SPI1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void TFT_Command(uint8_t cmd) {
+	SEL_TFT();
+	HAL_GPIO_WritePin(TFT_DC_GPIO_Port, TFT_DC_Pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi1, &cmd, 1, 1000);
+	UNSEL_TFT();
+}
+
+void TFT_Data(uint8_t data) {
+	SEL_TFT();
+	HAL_GPIO_WritePin(TFT_DC_GPIO_Port, TFT_DC_Pin, GPIO_PIN_SET);
+	HAL_SPI_Transmit(&hspi1, &data, 1, 1000);
+	UNSEL_TFT();
+}
+void TFT_Init(void) {
+	HAL_GPIO_WritePin(TFT_RST_GPIO_Port, TFT_RST_Pin, GPIO_PIN_RESET);
+	HAL_Delay(20);
+	HAL_GPIO_WritePin(TFT_RST_GPIO_Port, TFT_RST_Pin, GPIO_PIN_SET);
+
+	// software reset
+	TFT_Command(0x01);
+	HAL_Delay(150);
+
+	// sleep out
+	TFT_Command(0x11);
+	HAL_Delay(120);
+
+	// 16-bit color
+	TFT_Command(0x3A);
+	TFT_Data(0x05);
+
+	//Memory access control
+	TFT_Command(0x36);
+	TFT_Data(0x00);
+
+	// Normal display mode
+	TFT_Command(0x13);
+	HAL_Delay(10);
+
+	// Display ON
+	TFT_Command(0x29);
+	HAL_Delay(100);
+}
+
+void TFT_FillRed(void)
+{
+    // Column address: 0 ~ 127
+    TFT_Command(0x2A);
+    TFT_Data(0x00);
+    TFT_Data(0x00);
+    TFT_Data(0x00);
+    TFT_Data(0x7F);
+
+    // Row address: 0 ~ 159
+    TFT_Command(0x2B);
+    TFT_Data(0x00);
+    TFT_Data(0x00);
+    TFT_Data(0x00);
+    TFT_Data(0x9F);
+
+    // Memory write
+    TFT_Command(0x2C);
+
+    HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(TFT_DC_GPIO_Port, TFT_DC_Pin, GPIO_PIN_SET);
+
+    uint8_t red[2] = {0xF8, 0x00};
+
+    for (int i = 0; i < 128 * 160; i++)
+    {
+        HAL_SPI_Transmit(&hspi1, red, 2, 1000);
+    }
+
+    HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_SET);
+}
+
 
 /* USER CODE END 0 */
 
@@ -89,38 +181,33 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI1_Init();
-
   /* USER CODE BEGIN 2 */
-
-
-  /* USER CODE BEGIN 2 */
-
-  uint8_t command = 0x9F;
-  uint8_t id[3] = {0};
-
-  HAL_StatusTypeDef tx_status;
-  HAL_StatusTypeDef rx_status;
+  TFT_Init();
+  TFT_FillRed();
 
   // CS 拉低，選擇 Flash
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
-
+  SEL_FLASH();
+  //----
+  // 讀取ID
+  //----
   // 傳送 JEDEC ID 指令
-  tx_status = HAL_SPI_Transmit(
-      &hspi1, &command, 1, 1000
-  );
+  uint8_t command = 0x9F;
+  uint8_t id[3] = {0};
+  HAL_StatusTypeDef tx_st = HAL_SPI_Transmit(&hspi1, &command, 1, 1000);
+  //printf("SPI TX status %d\r\n", tx_st);
+  HAL_StatusTypeDef rx_st = HAL_SPI_Receive(&hspi1, id, 3, 1000);
+  //printf("SPI RX status %d\r\n", rx_st);
+  //printf("Flash ID: %02X %02X %02X \r\n", id[0], id[1], id[2]);
 
-  // 接收 3 bytes 的 ID
-  rx_status = HAL_SPI_Receive(
-      &hspi1, id, 3, 1000
-  );
+  //----
+  //讀取register
+  //----
+
 
   // CS 拉高，結束通訊
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
-
-  volatile uint8_t test_done = 1;
+  UNSEL_FLASH();
 
   /* USER CODE END 2 */
-
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -226,9 +313,17 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOE_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(FLASH_CS_GPIO_Port, FLASH_CS_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, TFT_RST_Pin|TFT_DC_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : FLASH_CS_Pin */
   GPIO_InitStruct.Pin = FLASH_CS_Pin;
@@ -236,6 +331,20 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(FLASH_CS_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : TFT_RST_Pin TFT_DC_Pin */
+  GPIO_InitStruct.Pin = TFT_RST_Pin|TFT_DC_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : TFT_CS_Pin */
+  GPIO_InitStruct.Pin = TFT_CS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(TFT_CS_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

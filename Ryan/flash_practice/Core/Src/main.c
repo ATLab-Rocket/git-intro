@@ -204,6 +204,44 @@ void TFT_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void TFT_FillColor(uint16_t color);
 void TFT_ShowFlashInfo(const FlashInfo *info);
 
+/* read status register*/
+void updateFlashStatus(FlashInfo* flash){
+	  SEL_FLASH();
+	  uint8_t command = 0x05;
+	  HAL_StatusTypeDef commute_status = HAL_SPI_Transmit(&hspi1, &command, 1, 1000);
+	  if (commute_status == HAL_OK) {
+		  commute_status = HAL_SPI_Receive(&hspi1, &flash->status, 1, 1000);
+	  }
+	  UNSEL_FLASH();
+
+	  if (commute_status == HAL_OK) {
+		  flash->has_status = 1;
+	  }
+  }
+
+void readMemory(FlashInfo* flash, uint32_t address){
+	uint8_t command[4] = {
+			0x03,
+			(uint8_t)(address >> 16),
+			(uint8_t)(address >> 8),
+			(uint8_t)address
+	};
+	SEL_FLASH();
+	HAL_StatusTypeDef status = HAL_SPI_Transmit(&hspi1, command, 1, 1000);
+	if (status == HAL_OK) {
+		status = HAL_SPI_Receive(&hspi1, flash->data, 1, 1000);
+	}
+	if (status == HAL_OK) {
+		flash->has_data = 1;
+		flash->address = address;
+		flash->has_address = 1;
+	}
+	UNSEL_FLASH();
+}
+
+void writeMemory(FlashInfo* flash){
+
+}
 
 /* USER CODE END 0 */
 
@@ -242,37 +280,20 @@ int main(void)
 
   FlashInfo flash = {0};
 
-
-
-  //----
   // read ID
-  //----
   SEL_FLASH();
   uint8_t command = 0x9F;
   HAL_StatusTypeDef commute_status = HAL_SPI_Transmit(&hspi1, &command, 1, 1000);
   if (commute_status == HAL_OK)
 	  commute_status = HAL_SPI_Receive(&hspi1, flash.id, 3, 1000);
   UNSEL_FLASH();
-
   if (commute_status == HAL_OK) flash.has_id = 1;
-  TFT_ShowFlashInfo(&flash);
 
-  //----
-  //read status register
-  //----
-  SEL_FLASH();
-  command = 0x05;
-  uint8_t flash_status;
-  commute_status = HAL_SPI_Transmit(&hspi1, &command, 1, 1000);
-  if (commute_status == HAL_OK) {
-	  commute_status = HAL_SPI_Receive(&hspi1, &flash_status, 1, 1000);
-  }
-  UNSEL_FLASH();
+  updateFlashStatus(&flash);
 
-  if (commute_status == HAL_OK) {
-	  flash.status = flash_status;
-	  flash.has_status = 1;
-  }
+
+  // read memory
+  readMemory(&flash, 0x123456);
   TFT_ShowFlashInfo(&flash);
 
   /* USER CODE END 2 */

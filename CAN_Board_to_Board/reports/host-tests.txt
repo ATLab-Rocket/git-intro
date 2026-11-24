@@ -1,0 +1,21 @@
+Compiling protocol (WASI)
+(node:29592) ExperimentalWarning: WASI is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+protocol: PASS (256 sequences, all 2048 IDs and 256 DLCs, payload corruption, nulls)
+Compiling session (WASI)
+(node:10692) ExperimentalWarning: WASI is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+session: PASS (768 exchanges, wrap, stale/duplicate/wrong/late ACK, timeout, gaps)
+Compiling logging (WASI)
+(node:32808) ExperimentalWarning: WASI is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+logging queue: PASS (busy/retry, FIFO, overflow, truncation, offline/reconnect)
+Compiling usb_transport (WASI)
+(node:7332) ExperimentalWarning: WASI is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+transport: PASS (owned async buffer, 1000 busy calls, errors, IRQ restoration; mocked HAL only)
+Compiling uart_transport (WASI)
+(node:4888) ExperimentalWarning: WASI is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+transport: PASS (owned async buffer, 1000 busy calls, errors, IRQ restoration; mocked HAL only)
+PASS: 5 C test executables; WASI; software-only

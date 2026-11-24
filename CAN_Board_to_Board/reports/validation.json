@@ -1,0 +1,117 @@
+{
+  "date": "2026-11-24 Asia/Taipei",
+  "scope": "software only; no STM32 connected or programmed",
+  "base_commit": "970ff155d320a595897d7a35c801ce1f43c8faa4",
+  "uart_reference_commit": "8a0ba380a44f1942b53ace22eba7dfc87b91d70d",
+  "firmware_build_log": "build-summary.txt",
+  "firmware_builds": [
+    {
+      "project": "ATlab_CAN_F407",
+      "configuration": "Loopback",
+      "errors": 0,
+      "warnings": 0,
+      "elf_bytes": 1221728,
+      "elf_sha256": "4a9c3087be9b080f2654d3154b32158e1625ed29afdc5f245a94b8c22301c724",
+      "text": 37864,
+      "data": 340,
+      "bss": 12668
+    },
+    {
+      "project": "ATlab_CAN_F407",
+      "configuration": "Normal",
+      "errors": 0,
+      "warnings": 0,
+      "elf_bytes": 49712,
+      "elf_sha256": "c6d38146e2c6246111723507e2de8baaf73ad3579dc00cb2c82a3166c3aa4be5",
+      "text": 20244,
+      "data": 336,
+      "bss": 12672
+    },
+    {
+      "project": "ATlab_CAN_L476",
+      "configuration": "Loopback",
+      "errors": 0,
+      "warnings": 0,
+      "elf_bytes": 1337120,
+      "elf_sha256": "e4470bae58dcedae24799651b40fbd076068412dab606eceb252121ac4cb4f3c",
+      "text": 24456,
+      "data": 92,
+      "bss": 5660
+    },
+    {
+      "project": "ATlab_CAN_L476",
+      "configuration": "Normal",
+      "errors": 0,
+      "warnings": 0,
+      "elf_bytes": 38172,
+      "elf_sha256": "5616e7ab4171b9267c75b9321fa85951f797820e3d3ce36934c6c8d310e3f2b8",
+      "text": 14972,
+      "data": 92,
+      "bss": 5660
+    }
+  ],
+  "host_tests": {
+    "status": "PASS",
+    "target": "wasm32-wasi",
+    "compiler": "Zig 0.17.1 C compiler",
+    "runtime": "Node.js 24.22.1",
+    "sysroot": "official WASI SDK 34.0",
+    "sysroot_url": "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-34/wasi-sysroot-34.0.tar.gz",
+    "sysroot_archive_sha256": "9d813544eeebe38b7b8f2244ed591de46b6db812c6dd1a257ff9f0d2a905a2be",
+    "test_executables": 5,
+    "c_flags": [
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pedantic",
+      "-fsanitize-trap=all"
+    ],
+    "log": "host-tests.txt",
+    "runtime_notice": "Node prints ExperimentalWarning for WASI; not a compiler warning",
+    "source_sha256": {
+      "protocol/atlab_can_protocol.c": "4a9a18ea78d7dfca2b87f69a8eba63fb062d4edeb0f4495d922c9553a1f94496",
+      "protocol/atlab_can_protocol.h": "bc4ae92e8ea3f796c27d8ba0645374206ef18927e800a68454ad60c50ab395e3",
+      "protocol/atlab_session.c": "bdac09b28342385688a8b0501fcf7513dc9cf4ccf3fde7b91e6ab51fdc6c8c8b",
+      "protocol/atlab_session.h": "c975ae7a5a35cc889201539a654a73f27c7324130115f0f746711fc500b217c6",
+      "firmware/atlab_can_hal.c": "f92a9c958f6b1639c6d3493463d0e2a4ca8db7301f6622e66343f3da92ef8cdf",
+      "firmware/atlab_can_hal.h": "f9c6d0d504277f98dec8c9f48773aadd78305615cc68a8479f8359660e374133",
+      "firmware/atlab_debug_log.c": "e20dd446dbbfc49f495d38a975985c339730fdae16a53ed72292b9c16009099c",
+      "firmware/atlab_debug_log.h": "22099bcef345861b38b14f07753f4edf112803d797c438ae93c15410be0a13de",
+      "firmware/atlab_demo.c": "7ea0708a7c02fcf8bc459dcfe0b3c0ba429925b01551474e2d821ac8668410a0",
+      "firmware/atlab_demo.h": "c3b0d0743d7fb48d247cecd294add9e7ca3ebc8612f53de6a06273cb1cb644df",
+      "firmware/atlab_log_transport.c": "958da4d30dd53327937aa8002085c55d597adda99af8eabc4580336815c9bbb6",
+      "tests/run_tests.py": "d213238de5f9bc3c6f76ad1cb8f615e075dbff6d912092c85d750ac857d3f793",
+      "tests/run_tests.sh": "0074d9fd2ceb670b04105cb6834106b2d4699ac0fbb082524465c64619a5c6b9",
+      "tests/run_wasi.cjs": "35d2bc5e84c2ead1f3006f423b41cb958ddf61b437d8099d34477b838abfa45f",
+      "tests/test_logging.c": "a7354fc89b2cebc788522153b30511cdcbbb8cd4a533f7fa656f65a2a3ecdd44",
+      "tests/test_protocol.c": "4646851d1a6351f87e18842c290f7fa3ee3c5e32a446aa9e6043a0c1c0612d2a",
+      "tests/test_session.c": "d90370e36cbdcf53073b19df95877a6a651c4880fb0cf8132663c9a13f9bc098",
+      "tests/test_transport.c": "28d7e077eeeadbde43949f129bc2d57b2f6c74796317f6ce9a39c73487649103",
+      "tests/mocks/main.h": "85f73d2c9925bb5acbd07a2adc76ac05caf6774f440c1f35d64feb77b54e4a0f",
+      "tests/mocks/usbd_cdc_if.h": "27c50c716a51fdd20b065ecda2e2171b5d720151523a3911217947b652aa7e06",
+      "tests/mocks/usb_device.h": "1ec75b22b7a91f588af530cde150603603e1872728cceaa4ef537d2a6f22453d"
+    }
+  },
+  "hardware_tests": "not executed",
+  "cubemx_6_19": "not installed/found; generated with 6.18.1",
+  "tools": {
+    "CubeIDE": "2.2.0",
+    "CubeMX": "6.18.1",
+    "ARM_GCC": "14.3.rel1",
+    "F4_package": "1.28.3",
+    "L4_package": "1.18.2",
+    "host_compiler": "Zig 0.17.1",
+    "WASI_runtime": "Node.js 24.22.1"
+  },
+  "native_tests": {
+    "status": "blocked",
+    "compiled": "protocol.exe",
+    "execution_error": "WinError 4551: An Application Control policy has blocked this file",
+    "remaining_native_tests": "not executed"
+  },
+  "source_audit": "PASS: metadata, modes, source copy consistency, AF9, startup/linkers, linked IRQ symbols",
+  "remote_main_before": "e1841804570e1401c64588e9034ff7fe6f75e4a0",
+  "build_script": "tools/build.ps1 executed successfully for all four configurations",
+  "git_review": "PASS: CAN-only staged scope; no firmware binaries/build/cache artifacts; custom diff whitespace clean; vendor whitespace retained"
+}

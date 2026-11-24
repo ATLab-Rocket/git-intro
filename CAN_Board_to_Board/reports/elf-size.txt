@@ -1,0 +1,11 @@
+text	   data	    bss	    dec	    hex	filename
+  37864	    340	  12668	  50872	   c6b8	CAN_Board_to_Board\ATlab_CAN_F407\Loopback\ATlab_CAN_F407.elf
+
+text	   data	    bss	    dec	    hex	filename
+  20244	    336	  12672	  33252	   81e4	CAN_Board_to_Board\ATlab_CAN_F407\Normal\ATlab_CAN_F407.elf
+
+text	   data	    bss	    dec	    hex	filename
+  24456	     92	   5660	  30208	   7600	CAN_Board_to_Board\ATlab_CAN_L476\Loopback\ATlab_CAN_L476.elf
+
+text	   data	    bss	    dec	    hex	filename
+  14972	     92	   5660	  20724	   50f4	CAN_Board_to_Board\ATlab_CAN_L476\Normal\ATlab_CAN_L476.elf

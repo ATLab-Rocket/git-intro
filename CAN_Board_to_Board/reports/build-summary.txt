@@ -1,0 +1,24 @@
+F407 Loopback
+19:22:34 **** Clean-only build of configuration Loopback for project ATlab_CAN_F407 ****
+19:22:35 Build Finished. 0 errors, 0 warnings. (took 471ms)
+19:22:35 **** Build of configuration Loopback for project ATlab_CAN_F407 ****
+  37864	    340	  12668	  50872	   c6b8	ATlab_CAN_F407.elf
+19:22:40 Build Finished. 0 errors, 0 warnings. (took 4s.702ms)
+F407 Normal
+19:22:45 **** Clean-only build of configuration Normal for project ATlab_CAN_F407 ****
+19:22:45 Build Finished. 0 errors, 0 warnings. (took 518ms)
+19:22:47 **** Build of configuration Normal for project ATlab_CAN_F407 ****
+  20244	    336	  12672	  33252	   81e4	ATlab_CAN_F407.elf
+19:22:54 Build Finished. 0 errors, 0 warnings. (took 6s.248ms)
+L476 Loopback
+19:23:00 **** Clean-only build of configuration Loopback for project ATlab_CAN_L476 ****
+19:23:00 Build Finished. 0 errors, 0 warnings. (took 407ms)
+19:23:01 **** Build of configuration Loopback for project ATlab_CAN_L476 ****
+  24456	     92	   5660	  30208	   7600	ATlab_CAN_L476.elf
+19:23:04 Build Finished. 0 errors, 0 warnings. (took 2s.927ms)
+L476 Normal
+19:23:09 **** Clean-only build of configuration Normal for project ATlab_CAN_L476 ****
+19:23:09 Build Finished. 0 errors, 0 warnings. (took 321ms)
+19:23:10 **** Build of configuration Normal for project ATlab_CAN_L476 ****
+  14972	     92	   5660	  20724	   50f4	ATlab_CAN_L476.elf
+19:23:14 Build Finished. 0 errors, 0 warnings. (took 4s.756ms)
